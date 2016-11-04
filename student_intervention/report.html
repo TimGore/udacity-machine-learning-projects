@@ -12159,9 +12159,11 @@ However, decision tree are quite susceptible to over-fitting and can get stuck i
 <p>2)Support Vector Machines have been used to help predict some properties of chemical compounds, including environmental toxicity and pharmacutical activity. See "Applications of Support Vector Machines in Chemistry" by Ovidiu Ivanciuc in Reviews in Computational Chemistry, Volume 23, Eds.: K. B. Lipkowitz and T. R. Cundari. Wiley-VCH, Weinheim, 2007, pp. 291–400 (<a href="http://www.ivanciuc.org/Files/Reprint/Ivanciuc_SVM_CCR_2007_23_291.pdf">http://www.ivanciuc.org/Files/Reprint/Ivanciuc_SVM_CCR_2007_23_291.pdf</a>) for a very detailed review of the uses of SVM's in chemistry.</p>
 <p>Support Vector machines work well in high dimensional spaces and can fit non linear decision boundaries with the use of suitable "kernels". These kernels make support vector machines very versatile.
 On the down side, for non linear problems a support vector machine must use such a "kernel" to map the input features into a higher dimensional space to achieve seperability, making the classification process difficult to understand at an intuitive level. Also, an SVM does not directly provide probablility estimates for its predictions, so if these are required a cross-validation technique needs to be used which can be computationally expensive.</p>
+<p>The student data contains quite a few features and the decision boundary seems likely to be highly non-linear, so a support vector machine might work well on this data. In the literature support vector machines seem to be quite popular and have been used for some very challenging problems, so I thought I should give them a try.</p>
 <p>3)Gradient Tree Boosting has been used to model peoples transportation decisions. See "Smart City Mobility Application—Gradient Boosting Trees for Mobility Prediction and Analysis Based on Crowdsourced Data" by Ivana Semanjski and Sidharta Gautama (<a href="http://www.mdpi.com/1424-8220/15/7/15974/htm">http://www.mdpi.com/1424-8220/15/7/15974/htm</a>) with a view to improving sustainability by influencing these decisions.</p>
-<p>Gradient Tree Boosting is an ensemble method using Decision Trees as its underlying weak learner. Like decision trees they are suited to heterogenous input features. The underlying decision trees are usually quite shallow so there is less tendency to overfit. Using a suitable loss function can provide robustness to outliers.
-The disadvantages of Gradient Tree Boosting are the added complexity and computational load.</p>
+<p>Gradient Tree Boosting is an ensemble method using Decision Trees as its underlying weak learner. Like decision trees they are suited to heterogenous input features, such as our data contains. The underlying decision trees are usually quite shallow so there is less tendency to overfit. Using a suitable loss function can provide robustness to outliers.
+The disadvantages of Gradient Tree Boosting are the added complexity and computational load, especially as the iterative nature of the algorithm limits the possibilities for paralellisation.
+For our problem the Gradient Tree Boosting model is well suited to the heterogenous features and the expected non-linearity of the decision boundary and should improve on the basic decision tree at the expense of extra computational load.</p>
 
 </div>
 </div>
@@ -12259,7 +12261,7 @@ The disadvantages of Gradient Tree Boosting are the added complexity and computa
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[39]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># TODO: Import the three supervised learning models from sklearn</span>
@@ -12270,13 +12272,10 @@ The disadvantages of Gradient Tree Boosting are the added complexity and computa
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">svm</span>
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
-<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
 
 <span class="c1"># TODO: Initialize the three models</span>
 <span class="n">clf_A</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">clf_B</span> <span class="o">=</span> <span class="n">svm</span><span class="o">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="c1">#clf_C = RandomForestClassifier(random_state=0)</span>
-<span class="c1">#clf_C = KNeighborsClassifier()</span>
 <span class="n">clf_C</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># TODO: Set up the training set sizes</span>
@@ -12320,10 +12319,10 @@ The disadvantages of Gradient Tree Boosting are the added complexity and computa
 <div class="output_area"><div class="prompt"></div>
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Training a DecisionTreeClassifier using a training set size of 100. . .
-Trained model in 0.0040 seconds
+Trained model in 0.0070 seconds
 Made predictions in 0.0010 seconds.
 F1 score for training set: 1.0000.
-Made predictions in 0.0010 seconds.
+Made predictions in 0.0000 seconds.
 F1 score for test set: 0.6942.
 Training a DecisionTreeClassifier using a training set size of 200. . .
 Trained model in 0.0030 seconds
@@ -12335,45 +12334,45 @@ Training a DecisionTreeClassifier using a training set size of 300. . .
 Trained model in 0.0050 seconds
 Made predictions in 0.0000 seconds.
 F1 score for training set: 1.0000.
-Made predictions in 0.0010 seconds.
+Made predictions in 0.0000 seconds.
 F1 score for test set: 0.7167.
 Training a SVC using a training set size of 100. . .
 Trained model in 0.0030 seconds
-Made predictions in 0.0010 seconds.
-F1 score for training set: 0.8591.
 Made predictions in 0.0020 seconds.
+F1 score for training set: 0.8591.
+Made predictions in 0.0010 seconds.
 F1 score for test set: 0.7838.
 Training a SVC using a training set size of 200. . .
 Trained model in 0.0060 seconds
-Made predictions in 0.0040 seconds.
+Made predictions in 0.0030 seconds.
 F1 score for training set: 0.8693.
 Made predictions in 0.0020 seconds.
 F1 score for test set: 0.7755.
 Training a SVC using a training set size of 300. . .
-Trained model in 0.0100 seconds
-Made predictions in 0.0070 seconds.
+Trained model in 0.0090 seconds
+Made predictions in 0.0060 seconds.
 F1 score for training set: 0.8692.
 Made predictions in 0.0020 seconds.
 F1 score for test set: 0.7586.
 Training a GradientBoostingClassifier using a training set size of 100. . .
-Trained model in 0.0760 seconds
-Made predictions in 0.0000 seconds.
-F1 score for training set: 1.0000.
+Trained model in 0.0820 seconds
 Made predictions in 0.0010 seconds.
+F1 score for training set: 1.0000.
+Made predictions in 0.0000 seconds.
 F1 score for test set: 0.7612.
 Training a GradientBoostingClassifier using a training set size of 200. . .
-Trained model in 0.1120 seconds
-Made predictions in 0.0020 seconds.
+Trained model in 0.1130 seconds
+Made predictions in 0.0010 seconds.
 F1 score for training set: 0.9852.
 Made predictions in 0.0000 seconds.
 F1 score for test set: 0.7820.
 Training a GradientBoostingClassifier using a training set size of 300. . .
-Trained model in 0.1140 seconds
+Trained model in 0.1160 seconds
 Made predictions in 0.0010 seconds.
 F1 score for training set: 0.9740.
 Made predictions in 0.0000 seconds.
 F1 score for test set: 0.7727.
-Calc SVC decision fn in 0.0020 seconds.
+Calc SVC decision fn in 0.0030 seconds.
 </pre>
 </div>
 </div>
