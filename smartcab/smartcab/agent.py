@@ -39,6 +39,12 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
+        if testing:
+            self.epsilon = 0.0
+            self.alpha = 0.0
+        else:
+            if self.epsilon > 0.0:
+                self.epsilon = self.epsilon - 0.05
 
         return None
 
@@ -56,7 +62,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set 'state' as a tuple of relevant data for the agent        
-        state = None
+        state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'])
 
         return state
 
@@ -84,7 +90,9 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
-
+        if self.learning:
+            if not state in self.Q:
+               self.Q[state] = {None:0, 'forward':0, 'left':0, 'right':0} 
         return
 
 
@@ -107,6 +115,17 @@ class LearningAgent(Agent):
         # first step in project - just take random action
         if not self.learning:
             action = random.choice(self.env.valid_actions[0:])
+        else:
+            if random.random() < self.epsilon:
+                action = random.choice(self.env.valid_actions[0:])
+            else:
+                action = None
+                maxq = self.Q[state][None]
+                for act, q in self.Q[state].iteritems():
+                    if q > maxq:
+                        maxq = q
+                        action = act
+                        
         return action
 
 
@@ -120,6 +139,10 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
+        if self.learning:
+            currentQ = self.Q[state][action]
+            newQ = currentQ + (self.alpha * reward)
+            self.Q[state][action] = newQ
 
         return
 
@@ -156,7 +179,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent)
+    agent = env.create_agent(LearningAgent, learning=True)
     
     ##############
     # Follow the driving agent
