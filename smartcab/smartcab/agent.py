@@ -141,7 +141,7 @@ class LearningAgent(Agent):
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
         if self.learning:
             currentQ = self.Q[state][action]
-            newQ = currentQ + (self.alpha * reward)
+            newQ = ((1.0 - self.alpha) * currentQ) + (self.alpha * reward)
             self.Q[state][action] = newQ
 
         return
