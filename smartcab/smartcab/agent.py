@@ -23,7 +23,8 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-
+        # keep track of how many runs we have done
+        self.learning_runs = 0
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -39,13 +40,25 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
+        self.learning_runs = self.learning_runs + 1
         if testing:
             self.epsilon = 0.0
             self.alpha = 0.0
         else:
-            if self.epsilon > 0.0:
-                self.epsilon = self.epsilon - 0.05
-
+#           Various decay functions for epsilon tried here. Leave them all
+#           here (commented) as a record of the things i tried out.
+#            if self.epsilon > 0.0:
+#                self.epsilon = self.epsilon - 0.024
+#            self.epsilon = math.pow(0.927, self.learning_runs)
+#            self.epsilon = 1.0 - 1.0/(40.001 - self.learning_runs)
+            self.epsilon = 1.0 / (1.0 + math.exp(0.073611*(self.learning_runs - 40)))
+#            if self.learning_runs == 35:
+#                self.epsilon = 0.06
+#            if self.learning_runs == 40:
+#                self.epsilon = 0.04
+#        if self.alpha > 0.5:
+#            self.alpha = self.alpha - 0.01
+        
         return None
 
     def build_state(self):
@@ -179,7 +192,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, learning=True)
+    agent = env.create_agent(LearningAgent, learning=True, alpha=0.5)
     
     ##############
     # Follow the driving agent
@@ -194,14 +207,14 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.01, display=False, log_metrics=True)
+    sim = Simulator(env, update_delay=0.01, display=False, log_metrics=True, optimized=True)
     
     ##############
     # Run the simulator
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=10)
+    sim.run(n_test=20)
 
 
 if __name__ == '__main__':
