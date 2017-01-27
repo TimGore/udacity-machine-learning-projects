@@ -107,7 +107,13 @@ class Simulator(object):
             self.log_file = open(self.log_filename, 'wb')
             self.log_writer = csv.DictWriter(self.log_file, fieldnames=self.log_fields)
             self.log_writer.writeheader()
-
+        
+        self.test_summary={}
+        self.test_summary['successes'] = 0
+        self.test_summary['num_steps'] = 0
+        self.test_summary['violations'] = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+        
+            
     def run(self, tolerance=0.05, n_test=0):
         """ Run a simulation of the environment. 
 
@@ -134,6 +140,8 @@ class Simulator(object):
                         if a.epsilon < tolerance: # assumes epsilon decays to 0
                             testing = True
                             trial = 1
+                            print " \n\n\n ********** START TESTING ************"
+                            a.print_learning_stats()
                     else:
                         testing = True
                         trial = 1
@@ -182,8 +190,8 @@ class Simulator(object):
                         self.env.step()
                         self.last_updated = self.current_time
                     
-                    # Render text
-                    self.render_text(trial, testing)
+                        # Render text
+                        self.render_text(trial, testing)
 
                     # Render GUI and sleep
                     if self.display:
@@ -224,6 +232,14 @@ class Simulator(object):
             total_trials = total_trials + 1
             trial = trial + 1
 
+            # keep summary data for testing runs
+            if testing:
+                self.test_summary['num_steps'] = self.test_summary['num_steps'] + self.env.trial_data['initial_deadline'] - self.env.trial_data['final_deadline']
+                for violation in [0,1,2,3,4]:
+                    self.test_summary['violations'][violation] = self.test_summary['violations'][violation] + self.env.trial_data['actions'][violation]
+                if self.env.success:
+                    self.test_summary['successes'] = self.test_summary['successes'] + 1
+                
         # Clean up
         if self.log_metrics:
 
@@ -244,7 +260,13 @@ class Simulator(object):
             self.log_file.close()
 
         print "\nSimulation ended. . . "
-
+        print "Major accident  rate: ", 1.0 * self.test_summary['violations'][4] / self.test_summary['num_steps']
+        print "Minor accident  rate: ", 1.0 * self.test_summary['violations'][3] / self.test_summary['num_steps']
+        print "Major violation rate: ", 1.0 * self.test_summary['violations'][2] / self.test_summary['num_steps']
+        print "Minor violation rate: ", 1.0 * self.test_summary['violations'][1] / self.test_summary['num_steps']
+        print "Total Bad moves rate: ", 1.0 * (self.test_summary['num_steps'] - self.test_summary['violations'][0]) / self.test_summary['num_steps']
+        print "Success         rate: ", (self.test_summary['successes'] * 100.0) / n_test, "%"
+        
         # Report final metrics
         if self.display:
             self.pygame.display.quit()  # shut down pygame
